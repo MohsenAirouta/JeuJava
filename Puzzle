@@ -1,0 +1,235 @@
+package AdventureGameJava.src.com.adventure;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+/**
+ * La classe Puzzle représente une énigme que le joueur doit résoudre.
+ * Les énigmes peuvent être générées aléatoirement pour différentes parties.
+ * 
+ * 
+ */
+public class Puzzle implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    private String name;
+    private String description;
+    private String solution;
+    private String hint;
+    private boolean solved;
+    private PuzzleType type;
+    private Item reward;
+    
+    /**
+     * Enum représentant différents types d'énigmes
+     */
+    public enum PuzzleType {
+        RIDDLE,
+        COMBINATION,
+        PATTERN,
+        BOTANICAL
+    }
+    
+    /**
+     * Constructeur pour les objets Puzzle
+     * 
+     * @param name Le nom de l'énigme
+     * @param description La description de l'énigme
+     * @param solution La solution de l'énigme
+     * @param hint Un indice pour résoudre l'énigme
+     * @param type Le type d'énigme
+     * @param reward L'objet récompense pour la résolution de l'énigme
+     */
+    public Puzzle(String name, String description, String solution, String hint, PuzzleType type, Item reward) {
+        this.name = name;
+        this.description = description;
+        this.solution = solution;
+        this.hint = hint;
+        this.type = type;
+        this.reward = reward;
+        this.solved = false;
+    }
+    
+    /**
+     * Tente de résoudre l'énigme avec la réponse donnée
+     * 
+     * @param answer La réponse du joueur
+     * @return vrai si l'énigme est résolue, faux sinon
+     */
+    public boolean solve(String answer) {
+        if (solved) {
+            return true; // Déjà résolu
+        }
+        
+        if (answer.equalsIgnoreCase(solution)) {
+            solved = true;
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Obtient l'indice pour cette énigme
+     * 
+     * @return L'indice
+     */
+    public String getHint() {
+        return hint;
+    }
+    
+    /**
+     * Obtient la récompense pour la résolution de cette énigme
+     * 
+     * @return L'objet récompense
+     */
+    public Item getReward() {
+        return reward;
+    }
+    
+    /**
+     * Vérifie si cette énigme a été résolue
+     * 
+     * @return vrai si l'énigme est résolue, faux sinon
+     */
+    public boolean isSolved() {
+        return solved;
+    }
+    
+    /**
+     * Obtient le nom de cette énigme
+     * 
+     * @return Le nom
+     */
+    public String getName() {
+        return name;
+    }
+    
+    /**
+     * Obtient la description de cette énigme
+     * 
+     * @return La description
+     */
+    public String getDescription() {
+        return description;
+    }
+    
+    /**
+     * Obtient le type de cette énigme
+     * 
+     * @return Le type d'énigme
+     */
+    public PuzzleType getType() {
+        return type;
+    }
+    
+    /**
+     * Obtient la solution de cette énigme
+     * Cette méthode ne devrait être utilisée que par le système de jeu, pas affichée au joueur
+     * 
+     * @return La solution
+     */
+    public String getSolution() {
+        return solution;
+    }
+    
+    /**
+     * Méthode statique pour créer une énigme botanique aléatoire
+     * 
+     * @param reward L'objet à récompenser lors de la résolution
+     * @return Une énigme générée aléatoirement
+     */
+    public static Puzzle createRandomBotanicalPuzzle(Item reward) {
+        String[][] botanicalRiddles = {
+            {"L'Énigme de la Fleur", "Je nais la nuit, je meurs le jour, mais dans l'obscurité ou la lumière, je continue à me balancer. Qui suis-je ?", "moonflower", "Elle fleurit la nuit et se ferme pendant la journée."},
+            {"Le Puzzle de l'Arbre", "Je commence par un 'E', je termine par un 'E', et je contiens une lettre. Qui suis-je ?", "envelope", "Il contient des lettres et a 'E' aux deux extrémités."},
+            {"Le Défi de la Graine", "En avant je suis lourd, en arrière je ne le suis pas. Qui suis-je ?", "ton", "Lisez-le en avant et en arrière."},
+            {"Le Mystère du Jardin", "Je parle sans bouche et j'entends sans oreilles. Je n'ai pas de corps, mais je prends vie avec le vent. Qui suis-je ?", "echo", "Vous pouvez l'entendre dans le jardin quand vous appelez."},
+            {"L'Énigme de la Plante", "Qu'est-ce qui a des racines que personne ne voit, est plus grand que les arbres, monte, monte, et pourtant ne grandit jamais ?", "mountain", "Une caractéristique naturelle sur laquelle poussent les plantes."}
+        };
+        
+        Random rand = new Random();
+        int index = rand.nextInt(botanicalRiddles.length);
+        
+        String[] selectedRiddle = botanicalRiddles[index];
+        
+        return new Puzzle(
+            selectedRiddle[0], 
+            selectedRiddle[1], 
+            selectedRiddle[2], 
+            selectedRiddle[3], 
+            PuzzleType.BOTANICAL, 
+            reward
+        );
+    }
+    
+    /**
+     * Méthode statique pour créer une énigme de combinaison aléatoire
+     * 
+     * @param reward L'objet à récompenser lors de la résolution
+     * @return Une énigme générée aléatoirement
+     */
+    public static Puzzle createRandomCombinationPuzzle(Item reward) {
+        List<Integer> digits = new ArrayList<>();
+        for (int i = 1; i <= 9; i++) {
+            digits.add(i);
+        }
+        
+        Collections.shuffle(digits);
+        
+        StringBuilder combination = new StringBuilder();
+        for (int i = 0; i < 3; i++) {
+            combination.append(digits.get(i));
+        }
+        
+        String solution = combination.toString();
+        
+        int firstNumber = Character.getNumericValue(solution.charAt(0));
+        int secondNumber = Character.getNumericValue(solution.charAt(1));
+        int thirdNumber = Character.getNumericValue(solution.charAt(2));
+        
+        String description = "Un dispositif à combinaison verrouillé nécessite un code à trois chiffres. " +
+                "Il y a une note à proximité avec un indice : " +
+                "\"Le premier chiffre est un nombre premier inférieur à 10. " +
+                "Le deuxième chiffre est " + (secondNumber > firstNumber ? "supérieur" : "inférieur") + " au premier. " +
+                "Le troisième chiffre est le résultat " + (thirdNumber % 2 == 0 ? "pair" : "impair") + 
+                " de l'addition des deux premiers chiffres " + 
+                (thirdNumber == firstNumber + secondNumber ? "" : "moins 1") + ".\"";
+        
+        String hint = "Essayez différentes combinaisons basées sur les indices mathématiques.";
+        
+        return new Puzzle("Serrure à Combinaison", description, solution, hint, PuzzleType.COMBINATION, reward);
+    }
+    
+    /**
+     * Méthode statique pour créer une énigme de motif aléatoire
+     * 
+     * @param reward L'objet à récompenser lors de la résolution
+     * @return Une énigme générée aléatoirement
+     */
+    public static Puzzle createRandomPatternPuzzle(Item reward) {
+        String[][] patterns = {
+            {"Séquence de Couleurs", "Une séquence de boutons colorés doit être pressée dans l'ordre : Rouge, Vert, Bleu, Jaune. Quelle est la suivante ?", "red", "Le motif se répète."},
+            {"Motif de Nombres", "Quel est le prochain nombre dans la séquence : 2, 4, 8, 16, ... ?", "32", "Chaque nombre est doublé."},
+            {"Motif de Lettres", "Quelle lettre vient ensuite : A, C, E, G, ... ?", "i", "Chaque seconde lettre de l'alphabet."},
+            {"Motif de Symboles", "Quel est le symbole manquant : ○, □, △, ○, □, ... ?", "triangle", "Le motif est Cercle, Carré, Triangle, qui se répète."},
+            {"Motif de Plantes", "Dans ce jardin, les plantes sont disposées selon un motif : Rose, Tulipe, Marguerite, Rose, Tulipe, ... ?", "daisy", "Les fleurs se répètent dans un cycle de trois."}
+        };
+        
+        Random rand = new Random();
+        int index = rand.nextInt(patterns.length);
+        
+        String[] selectedPattern = patterns[index];
+        
+        return new Puzzle(
+            selectedPattern[0], 
+            selectedPattern[1], 
+            selectedPattern[2], 
+            selectedPattern[3], 
+            PuzzleType.PATTERN, 
+            reward
+        );
+    }
+} 
