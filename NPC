@@ -1,0 +1,338 @@
+package AdventureGameJava.src.com.adventure;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+/**
+ * La classe NPC représente un personnage non-joueur dans le jeu.
+ * Les PNJ peuvent fournir des informations, des indices et des objets au joueur.
+ * 
+ * 
+ */
+public class NPC implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    private String name;
+    private String description;
+    private Map<String, String> dialogues;
+    private List<String> dialogueKeys;
+    private Puzzle puzzle;
+    private Item giftItem;
+    private boolean hasGivenGift;
+    private boolean isHostile;
+    private String dialog;
+    private Item puzzleReward;
+    private boolean hasTalked;
+    
+    /**
+     * Constructeur pour les objets NPC
+     * 
+     * @param name Le nom du PNJ
+     * @param description La description du PNJ
+     * @param dialog Le dialogue initial du PNJ
+     */
+    public NPC(String name, String description, String dialog) {
+        this.name = name;
+        this.description = description;
+        this.dialogues = new HashMap<>();
+        this.dialogueKeys = new ArrayList<>();
+        this.hasGivenGift = false;
+        this.isHostile = false;
+        this.dialog = dialog;
+        this.hasTalked = false;
+    }
+    
+    /**
+     * Constructeur pour les objets NPC avec une énigme
+     * 
+     * @param name Le nom du PNJ
+     * @param description La description du PNJ
+     * @param dialog Le dialogue initial du PNJ
+     * @param puzzle L'énigme posée par le PNJ
+     * @param puzzleReward La récompense pour résoudre l'énigme
+     */
+    public NPC(String name, String description, String dialog, Puzzle puzzle, Item puzzleReward) {
+        this.name = name;
+        this.description = description;
+        this.dialogues = new HashMap<>();
+        this.dialogueKeys = new ArrayList<>();
+        this.hasGivenGift = false;
+        this.isHostile = false;
+        this.dialog = dialog;
+        this.puzzle = puzzle;
+        this.puzzleReward = puzzleReward;
+        this.hasTalked = false;
+    }
+    
+    /**
+     * Ajoute une option de dialogue pour ce PNJ
+     * 
+     * @param topic Le sujet à discuter
+     * @param response La réponse du PNJ
+     */
+    public void addDialogue(String topic, String response) {
+        dialogues.put(topic.toLowerCase(), response);
+        dialogueKeys.add(topic.toLowerCase());
+    }
+    
+    /**
+     * Définit une énigme pour ce PNJ
+     * 
+     * @param puzzle L'énigme à définir
+     */
+    public void setPuzzle(Puzzle puzzle) {
+        this.puzzle = puzzle;
+    }
+    
+    /**
+     * Définit un objet que ce PNJ peut donner au joueur
+     * 
+     * @param item L'objet à donner
+     */
+    public void setGiftItem(Item item) {
+        this.giftItem = item;
+    }
+    
+    /**
+     * Définit si ce PNJ est hostile
+     * 
+     * @param isHostile vrai si le PNJ est hostile, faux sinon
+     */
+    public void setHostile(boolean isHostile) {
+        this.isHostile = isHostile;
+    }
+    
+    /**
+     * Obtient une réponse de ce PNJ sur un sujet donné
+     * 
+     * @param topic Le sujet à discuter
+     * @return La réponse du PNJ
+     */
+    public String talk(String topic) {
+        if (isHostile) {
+            return name + " refuse de vous parler. Il semble hostile.";
+        }
+        
+        String lowercaseTopic = topic.toLowerCase();
+        
+        if (dialogues.containsKey(lowercaseTopic)) {
+            return name + " dit : \"" + dialogues.get(lowercaseTopic) + "\"";
+        } else if (topic.equalsIgnoreCase("help") || topic.equalsIgnoreCase("hint")) {
+            if (puzzle != null && !puzzle.isSolved()) {
+                return name + " dit : \"" + puzzle.getHint() + "\"";
+            } else {
+                return name + " dit : \"Je ne sais pas comment je peux vous aider avec ça pour le moment.\"";
+            }
+        } else {
+            return name + " dit : \"Je ne sais rien à ce sujet. Essayez de me demander à propos de " + 
+                   getRandomDialogueTopic() + " à la place.\"";
+        }
+    }
+    
+    /**
+     * Obtient un sujet de dialogue aléatoire de ce PNJ
+     * 
+     * @return Un sujet aléatoire
+     */
+    private String getRandomDialogueTopic() {
+        if (dialogueKeys.isEmpty()) {
+            return "quelque chose d'autre";
+        }
+        
+        Random rand = new Random();
+        return dialogueKeys.get(rand.nextInt(dialogueKeys.size()));
+    }
+    
+    /**
+     * Tente de résoudre l'énigme de ce PNJ
+     * 
+     * @param answer La réponse du joueur
+     * @return Le résultat de la tentative
+     */
+    public String solvePuzzle(String answer) {
+        if (puzzle == null) {
+            return "Ce personnage n'a pas d'énigme à résoudre.";
+        }
+        
+        if (puzzle.isSolved()) {
+            return "Vous avez déjà résolu cette énigme.";
+        }
+        
+        if (puzzle.solve(answer)) {
+            return "Correct ! " + name + " sourit. \"Bravo, vous avez résolu mon énigme !\"";
+        } else {
+            return "Ce n'est pas la bonne réponse. " + name + " secoue la tête. \"Essayez encore.\"";
+        }
+    }
+    
+    /**
+     * Obtient la récompense pour avoir résolu l'énigme de ce PNJ
+     * 
+     * @return L'objet de récompense, ou null si pas d'énigme ou déjà résolue
+     */
+    public Item getPuzzleReward() {
+        if (puzzle != null && puzzle.isSolved()) {
+            return puzzle.getReward();
+        }
+        return null;
+    }
+    
+    /**
+     * Obtient un cadeau de ce PNJ
+     * 
+     * @return L'objet cadeau, ou null si déjà donné ou pas de cadeau
+     */
+    public Item getGift() {
+        if (giftItem != null && !hasGivenGift) {
+            hasGivenGift = true;
+            return giftItem;
+        }
+        return null;
+    }
+    
+    /**
+     * Vérifie si ce PNJ a donné son cadeau
+     * 
+     * @return vrai si le cadeau a été donné, faux sinon
+     */
+    public boolean hasGivenGift() {
+        return hasGivenGift;
+    }
+    
+    /**
+     * Obtient le nom de ce PNJ
+     * 
+     * @return Le nom
+     */
+    public String getName() {
+        return name;
+    }
+    
+    /**
+     * Obtient la description de ce PNJ
+     * 
+     * @return La description
+     */
+    public String getDescription() {
+        return description;
+    }
+    
+    /**
+     * Obtient les sujets disponibles pour ce PNJ
+     * 
+     * @return Une liste de sujets
+     */
+    public List<String> getTopics() {
+        return new ArrayList<>(dialogueKeys);
+    }
+    
+    /**
+     * Obtient l'énigme de ce PNJ
+     * 
+     * @return L'énigme
+     */
+    public Puzzle getPuzzle() {
+        return puzzle;
+    }
+    
+    /**
+     * Vérifie si ce PNJ est hostile
+     * 
+     * @return vrai si le PNJ est hostile, faux sinon
+     */
+    public boolean isHostile() {
+        return isHostile;
+    }
+    
+    /**
+     * Vérifie si le joueur a déjà parlé à ce PNJ
+     * 
+     * @return vrai si le joueur a déjà parlé au PNJ, faux sinon
+     */
+    public boolean hasTalked() {
+        return hasTalked;
+    }
+    
+    /**
+     * Marque ce PNJ comme ayant déjà parlé au joueur
+     */
+    public void setHasTalked(boolean hasTalked) {
+        this.hasTalked = hasTalked;
+    }
+    
+    /**
+     * Obtient le dialogue initial de ce PNJ
+     * 
+     * @return Le dialogue initial
+     */
+    public String getDialog() {
+        return dialog;
+    }
+    
+    /**
+     * Crée un PNJ jardinier âgé
+     * 
+     * @param letterC L'objet lettre C comme récompense
+     * @return Le PNJ créé
+     */
+    public static NPC createOldGardener(Item letterC) {
+        NPC gardener = new NPC("Vieux Jardinier", "Un homme âgé aux mains usées et au sourire bienveillant. Il semble avoir travaillé dans le jardin pendant de nombreuses années.", "Ce jardin est ma maison depuis plus de 40 ans. J'étais l'assistant et l'ami de votre grand-père.");
+        
+        gardener.addDialogue("grandfather", "Votre grand-père était un botaniste brillant. Il était obsédé par la recherche de la Fleur de Lumière. Je ne l'ai pas vu depuis qu'il est allé à la Porte de la Lumière Ancienne.");
+        gardener.addDialogue("light flower", "La Fleur de Lumière est une plante légendaire aux propriétés curatives incroyables. Votre grand-père a consacré sa vie à la trouver.");
+        gardener.addDialogue("yourself", "Moi ? Je ne suis que le gardien. J'entretiens ce jardin depuis la disparition de votre grand-père.");
+        gardener.addDialogue("riddle", "J'ai une énigme botanique pour vous. Si vous pouvez la résoudre, j'aurai peut-être quelque chose qui pourrait vous aider.");
+        
+        Puzzle puzzle = Puzzle.createRandomBotanicalPuzzle(letterC);
+        gardener.setPuzzle(puzzle);
+        
+        return gardener;
+    }
+    
+    /**
+     * Crée un PNJ étranger mystérieux
+     * 
+     * @param glasses L'objet lunettes spéciales comme récompense
+     * @return Le PNJ créé
+     */
+    public static NPC createMysteriousStranger(Item glasses) {
+        NPC stranger = new NPC("Étranger Mystérieux", "Une silhouette dans une cape sombre, son visage obscurci par les ombres. Il semble en savoir beaucoup sur le jardin.", "Qui je suis n'est pas important. Ce qui compte, c'est que je connais la Fleur de Lumière et les recherches de votre grand-père.");
+        
+        stranger.addDialogue("garden", "Ce jardin recèle de nombreux secrets. Tous ne sont pas visibles à l'œil nu.");
+        stranger.addDialogue("grandfather", "Votre grand-père était sur le point de trouver ce qu'il cherchait. Trop près, peut-être. Il y a ceux qui voudraient garder de telles découvertes cachées.");
+        stranger.addDialogue("light flower", "La Fleur de Lumière existe. Mais la trouver nécessite de percevoir ce que les autres ne peuvent pas voir.");
+        stranger.addDialogue("secrets", "Il y a des passages cachés dans ce jardin. L'un d'eux se trouve dans la Cave des Archives. Mais vous aurez besoin d'un équipement spécial pour le voir.");
+        stranger.addDialogue("puzzle", "Je vous mets au défi avec une énigme. Résolvez-la, et je vous fournirai quelque chose pour vous aider dans votre recherche.");
+        
+        Puzzle puzzle = Puzzle.createRandomPatternPuzzle(glasses);
+        stranger.setPuzzle(puzzle);
+        
+        return stranger;
+    }
+    
+    /**
+     * Crée un PNJ chercheur botaniste
+     * 
+     * @param medallion L'objet médaillon comme récompense
+     * @return Le PNJ créé
+     */
+    public static NPC createBotanistResearcher(Item medallion) {
+        NPC researcher = new NPC("Chercheuse Botaniste", "Une jeune femme avec des lunettes et un carnet, étudiant méticuleusement les plantes du jardin.", "J'étudie les espèces végétales uniques de ce jardin. Le travail de votre grand-père était révolutionnaire en science botanique.");
+        
+        researcher.addDialogue("yourself", "Je suis doctorante en botanique. J'ai obtenu la permission d'étudier ici, mais certaines zones me restent inaccessibles.");
+        researcher.addDialogue("garden", "Ce jardin contient des espèces végétales qu'on ne trouve nulle part ailleurs dans le monde. C'est un trésor botanique.");
+        researcher.addDialogue("grandfather", "Les articles de votre grand-père sont encore cités dans les revues académiques. Ses théories sur la communication des plantes étaient en avance sur leur temps.");
+        researcher.addDialogue("light flower", "La Fleur de Lumière est considérée comme un mythe par la plupart des scientifiques. Mais si quelqu'un pouvait la trouver, ce serait votre grand-père.");
+        researcher.addDialogue("ancient gate", "La Porte de la Lumière Ancienne est scellée avec une serrure spéciale. Seul un médaillon avec les bons symboles botaniques peut l'ouvrir.");
+        researcher.addDialogue("combination", "J'ai trouvé un vieux coffre-fort qui pourrait contenir quelque chose d'utile, mais il est verrouillé avec une combinaison.");
+        
+        Puzzle puzzle = Puzzle.createRandomCombinationPuzzle(medallion);
+        researcher.setPuzzle(puzzle);
+        
+        return researcher;
+    }
+} 
