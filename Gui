@@ -1,0 +1,101 @@
+package AdventureGameJava.src.com.adventure;
+
+import java.util.Scanner;
+
+/**
+ * La classe GUI gère toutes les interactions utilisateur dans le jeu d'aventure.
+ * Elle lit les commandes de l'utilisateur et affiche des messages.
+ * 
+ * 
+ */
+public class GUI {
+    private Scanner reader;
+    
+    /**
+     * Constructeur pour les objets GUI
+     * Initialise le scanner pour lire les entrées utilisateur
+     */
+    public GUI() {
+        reader = new Scanner(System.in);
+    }
+    
+    /**
+     * Affiche un message à l'utilisateur
+     * 
+     * @param message Le message à afficher
+     */
+    public void displayMessage(String message) {
+        System.out.println(message);
+    }
+    
+    /**
+     * Efface l'écran en imprimant plusieurs nouvelles lignes
+     */
+    public void clearScreen() {
+        for (int i = 0; i < 50; i++) {
+            System.out.println();
+        }
+    }
+    
+    /**
+     * Obtient une commande de l'utilisateur
+     * 
+     * @return Un objet Command représentant l'entrée de l'utilisateur
+     */
+    public Command getCommand() {
+        String inputLine;
+        String commandWord = null;
+        String secondWord = null;
+        String fullArgs = null;
+        
+        System.out.print("> ");
+        inputLine = reader.nextLine().trim().toUpperCase();
+        
+        Scanner tokenizer = new Scanner(inputLine);
+        if (tokenizer.hasNext()) {
+            commandWord = tokenizer.next();
+            if (tokenizer.hasNext()) {
+                secondWord = tokenizer.next();
+                
+                // Extract the full arguments (everything after the command word)
+                int commandWordEndIndex = inputLine.indexOf(commandWord) + commandWord.length();
+                if (commandWordEndIndex < inputLine.length()) {
+                    fullArgs = inputLine.substring(commandWordEndIndex).trim();
+                }
+            }
+        }
+        
+        tokenizer.close();
+        return new Command(commandWord, secondWord, fullArgs);
+    }
+    
+    /**
+     * Obtient une entrée de chaîne de l'utilisateur
+     * 
+     * @param prompt L'invite à afficher à l'utilisateur
+     * @return L'entrée de l'utilisateur
+     */
+    public String getInput(String prompt) {
+        System.out.print(prompt + " ");
+        return reader.nextLine().trim();
+    }
+    
+    /**
+     * Obtient une réponse oui/non de l'utilisateur
+     * 
+     * @param question La question à poser
+     * @return vrai si l'utilisateur répond 'oui', faux sinon
+     */
+    public boolean getYesNoResponse(String question) {
+        System.out.print(question + " (oui/non): ");
+        String response = reader.nextLine().trim().toLowerCase();
+        return response.equals("oui") || response.equals("o");
+    }
+    
+    /**
+     * Ferme le scanner lorsque le programme se termine
+     */
+    public void close() {
+        reader.close();
+    }
+} 
