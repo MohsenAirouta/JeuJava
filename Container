@@ -1,0 +1,146 @@
+package AdventureGameJava.src.com.adventure;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * La classe Container représente un conteneur pouvant contenir plusieurs objets dans le jeu.
+ * Les conteneurs peuvent être verrouillés et peuvent nécessiter une clé spécifique pour être ouverts.
+ * 
+ * 
+ */
+public class Container implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    private String name;
+    private String description;
+    private List<Item> items;
+    private boolean locked;
+    private String keyName;
+    
+    /**
+     * Constructeur pour les objets Container
+     * 
+     * @param name Le nom du conteneur
+     * @param description La description du conteneur
+     * @param locked Si le conteneur est initialement verrouillé
+     * @param keyName Le nom de la clé nécessaire pour déverrouiller le conteneur (si verrouillé)
+     */
+    public Container(String name, String description, boolean locked, String keyName) {
+        this.name = name;
+        this.description = description;
+        this.items = new ArrayList<>();
+        this.locked = locked;
+        this.keyName = keyName;
+    }
+    
+    /**
+     * Ajoute un objet au conteneur
+     * 
+     * @param item L'objet à ajouter
+     */
+    public void addItem(Item item) {
+        items.add(item);
+    }
+    
+    /**
+     * Retire un objet du conteneur
+     * 
+     * @param itemName Le nom de l'objet à retirer
+     * @return L'objet retiré, ou null si non trouvé
+     */
+    public Item removeItem(String itemName) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getName().equalsIgnoreCase(itemName)) {
+                return items.remove(i);
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Tente de déverrouiller le conteneur avec une clé
+     * 
+     * @param key La clé à essayer
+     * @return vrai si le conteneur a été déverrouillé, faux sinon
+     */
+    public boolean unlock(Item key) {
+        if (!locked) {
+            return true; // Déjà déverrouillé
+        }
+        
+        if (key != null && key.getName().equalsIgnoreCase(keyName)) {
+            locked = false;
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Vérifie si le conteneur est verrouillé
+     * 
+     * @return vrai si le conteneur est verrouillé, faux sinon
+     */
+    public boolean isLocked() {
+        return locked;
+    }
+    
+    /**
+     * Obtient le nom de la clé nécessaire pour déverrouiller ce conteneur
+     * 
+     * @return Le nom de la clé requise
+     */
+    public String getKeyName() {
+        return keyName;
+    }
+    
+    /**
+     * Obtient le nom de ce conteneur
+     * 
+     * @return Le nom du conteneur
+     */
+    public String getName() {
+        return name;
+    }
+    
+    /**
+     * Obtient la description de ce conteneur
+     * 
+     * @return La description du conteneur
+     */
+    public String getDescription() {
+        return description;
+    }
+    
+    /**
+     * Obtient une liste de tous les objets dans le conteneur
+     * 
+     * @return Une liste des objets dans le conteneur
+     */
+    public List<Item> getItems() {
+        return new ArrayList<>(items);
+    }
+    
+    /**
+     * Renvoie une chaîne décrivant les objets dans ce conteneur
+     * 
+     * @return Une chaîne listant tous les objets
+     */
+    public String getItemsString() {
+        if (items.isEmpty()) {
+            return "Le " + name + " est vide.";
+        }
+        
+        StringBuilder itemString = new StringBuilder("Le " + name + " contient : ");
+        for (int i = 0; i < items.size(); i++) {
+            itemString.append(items.get(i).getName());
+            if (i < items.size() - 1) {
+                itemString.append(", ");
+            }
+        }
+        
+        return itemString.toString();
+    }
+} 
